@@ -1,10 +1,12 @@
-
+extern crate log;
 use std::fs;
 use std::fs::metadata;
 use std::fs::File;
 use std::convert::TryFrom;
 use std::any::type_name;
+use std::path::Path;
 
+use log::{warn, info};
 
 pub struct PhotoXMP {
     util: Util,
@@ -64,14 +66,29 @@ impl PhotoXMP {
         type_name::<T>()
     }
     pub fn get_previous_image(current: Image, p: PhotoXMP)  -> Image {
-        let v = p.image_sequence.into_iter();
-        for x in v {
-            if x.xmp_path == current.xmp_path && x.image_path == current.image_path 
-             && x.exposure == current.exposure && x.aperture == current.aperture && x.iso == current.iso && x.list == current.list && x.white_balance == current.white_balance && x.ratio == current.ratio && x.shutter == current.shutter{
-                println!("{}", PhotoXMP::type_of(x));
-                return x;
-            }
+        let v =  p.image_sequence.into_iter().find(|x| x == &current).expect("Nothing found");
+        return v;
+    }
+    //todo: use failure here maybe
+    pub fn retrieve_data(folder: String, start_name: String) -> bool {
+        let img_arg = folder.clone()+ "\\" + &start_name; 
+
+        let img = File::create(folder.clone()+ "\\" + &start_name);
+        let xmp = File::create(folder.clone()+ "\\" + &Util::get_XMP_name(&start_name));
+        let img_file_path = Path::new(&img_arg);
+        let xmp_file_path = Path::new (&(folder+ "\\" + &Util::get_XMP_name(&start_name)));
+
+        if !img_file_path.exists() {
+            println!("Image {:?} does not exist", img);
+            return false;
         }
+        else {
+            return true;
+        }
+        // while img_file_path.exists() && xmp_file_path.exists() {
+        //     return true;
+        // }
+        
     }
 }
 
@@ -155,8 +172,8 @@ impl Util {
             Util::read_file(copy);
         }
         else {
-            //todo: replace panic with failure
-            panic!("The given argument is not file");
+            //todo: include failure
+            warn!("The given argument is not file");
         }
     }
     pub fn read_file(file_path: String) -> String {
@@ -259,7 +276,7 @@ impl Util {
         return true;
     }
 }
-
+//todo: add filepath attribute
 impl Image {
     pub fn create_default(
         xmp_path: String,
@@ -283,6 +300,19 @@ impl Image {
             exposure,
             image_path: String::from(&Util::get_XMP_name(&xmp_path)),
         };
+    }
+    pub fn create_new_image(name: String, folder_name: String) -> Image {
+        return Image {
+            aperture: 0,
+            iso: 0,
+            exposure: 0,
+            ratio: 0,
+            shutter: 0,
+            white_balance: 0,
+            list: 0,
+            image_path: folder_name.clone() + "\\" + &name,
+            xmp_path: folder_name + "\\" + &Util::get_XMP_name(&name)
+        }
     }
     //return a file object from the xmp path
     pub fn file_from_XMP(i: Image) -> std::io::Result<()> {
@@ -313,6 +343,15 @@ impl Image {
     }
     pub fn get_ratio(i:Image) -> u64 {
         return i.ratio;
+    }
+    pub fn print_image_info(i: Image) {
+        info!("Image file path: {}", i.image_path);
+        info!("XMP Path: {}", i.xmp_path);
+        info!("White Balance: {}", i.white_balance);
+        info!("Exposure: {}", i.exposure);
+        info!("Aperture: {}", i.aperture);
+        info!("ISO: {}", i.iso);
+        info!("Shutter speed: {}", i.shutter);
     }
     
 }
