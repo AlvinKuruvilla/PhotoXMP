@@ -3,11 +3,30 @@ extern crate log;
 use std::fs::metadata;
 use log::{warn};
 use std::fs;
+use std::fs::File;
+use std::io::{BufWriter, Write, BufRead, Read};
+
+use crate::Image;
 
 #[derive(Debug)]
 pub struct Util;
 
 impl Util {
+    pub fn write_file(i: Image, new_data: String) {
+        let mut file = File::create(i.get_xmp().unwrap()).expect("Unable to create requested file");
+
+        let mut bw = BufWriter::new(file);
+        
+        bw.write_all(new_data.as_bytes()).expect("Unable to write to file");
+    }
+    pub fn write_file_from_ref(i: &Image, new_data: String) {
+        let mut file = File::create(i.get_xmp().unwrap()).expect("Unable to create requested file");
+
+        let mut bw = BufWriter::new(file);
+
+        bw.write_all(new_data.as_bytes()).expect("Unable to write to file");
+    }
+
     pub fn get_data (file_path: String) {
         let copy = file_path.clone();
         let md = metadata(file_path).unwrap();
@@ -19,6 +38,7 @@ impl Util {
             warn!("The given argument is not file");
         }
     }
+    //todo: use BufRead
     pub fn read_file(file_path: String) -> String {
         let copy = file_path.clone();
         let md = metadata(file_path).unwrap();

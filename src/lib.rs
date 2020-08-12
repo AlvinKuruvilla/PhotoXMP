@@ -95,6 +95,7 @@ impl PhotoXMP {
           }
         
     }
+    
 }
 #[derive(Debug, Eq, PartialEq)]
 pub struct Image {
@@ -109,6 +110,7 @@ pub struct Image {
     exposure: u64,
 }
 //todo: add filepath attribute
+//todo: add setter methods for struct fields
 impl Image {
     pub fn create_default(
         xmp_path: String,
@@ -176,13 +178,19 @@ impl Image {
     pub fn get_ratio(self) -> Option<u64> {
         return Some(self.ratio);
     }
-    pub fn get_image_name(self) -> String{
+    pub fn get_image_name(self) -> String {
         let img_path = self.image_path;
         // let path = Path::new(&img_path);
         let filename = Path::new(&img_path).file_name().unwrap().to_str().unwrap().to_owned();
         
         return filename;
-    } 
+    }
+    pub fn set_exposure(self, e: u64) {
+        self.exposure = e;
+    }
+    pub fn set_white_balance(self, w: u32) {
+        self.white_balance = w;
+    }
     pub fn print_image_info(self) {
         info!("Image file path: {}", self.image_path);
         info!("XMP Path: {}", self.xmp_path);
