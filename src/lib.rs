@@ -33,9 +33,8 @@ impl PhotoXMP {
         // Gets data from xmp file
        let xmp_path =  Image::get_xmp(i).unwrap();
        let _f = File::create(xmp_path);
-
     }
-    pub fn type_of<T>(_: T) -> &'static str {
+    fn type_of<T>(_: T) -> &'static str {
         type_name::<T>()
     }
     pub fn get_previous_image(current: Image, p: PhotoXMP)  -> Image {
@@ -51,18 +50,25 @@ impl PhotoXMP {
         let mut count = 0;
         loop {
             count += 1;
-            if image_name.chars().nth(count) == "." {
+            let comp = image_name.chars().nth(count);
+            if  comp.unwrap().to_string()  == ".".to_owned() {
                     let mut j = count;
                     while j < image_name.len(){
-                        extension.push_str(image_name.chars().nth(j));
+                        let tmp = image_name.chars().nth(j).unwrap().to_string();
+                        let s_slice: &str = &tmp[..];
+                        extension.push_str(s_slice);
                     }
                 break;
             }
-            else if image_name.chars().nth(count).is_digit() {
-                string_num.push_str(image_name.chars().nth(count));
+            else if image_name.chars().nth(count).unwrap().is_digit(10) {
+                let t = image_name.chars().nth(count).unwrap().to_string();
+                let s: &str = &t[..];
+                string_num.push_str(s);
             }
             else {
-                pre_num.push_str(image_name.chars().nth(count));
+                let a = image_name.chars().nth(count).unwrap().to_string();
+                let b: &str = &a[..];
+                pre_num.push_str(b);
             }
         }
     }
@@ -79,12 +85,14 @@ impl PhotoXMP {
             warn!("Image {:?} does not exist", img);
             return false;
         }
+        //todo: REMOVE
         else {
             return true;
         }
-        // while img_file_path.exists() && xmp_file_path.exists() {
-        //     return true;
-        // }
+      
+         while img_file_path.exists() && xmp_file_path.exists() {
+              return true;
+          }
         
     }
 }
@@ -168,12 +176,12 @@ impl Image {
     pub fn get_ratio(self) -> Option<u64> {
         return Some(self.ratio);
     }
-    pub fn get_image_name(self) -> std::boxed::Box<&std::ffi::OsStr> {
+    pub fn get_image_name(self) -> String{
         let img_path = self.image_path;
-        let path = Path::new(img_path.as_ref());
-        let filename = path.file_stem().unwrap();
-        let val = Box::new(filename);
-        return val;
+        // let path = Path::new(&img_path);
+        let filename = Path::new(&img_path).file_name().unwrap().to_str().unwrap().to_owned();
+        
+        return filename;
     } 
     pub fn print_image_info(self) {
         info!("Image file path: {}", self.image_path);
